@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CTF Replay Lab — local-first artifact analysis, evidence replay, and manifest-backed flag verification." />
+  <meta name="theme-color" content="#05080d" />
+  <title>CTF Replay Lab</title>
+  <link rel="stylesheet" href="./style.css?v=600" />
+</head>
+<body data-theme="void">
+  <canvas id="ambientCanvas" class="ambient-canvas" aria-hidden="true"></canvas>
+  <div class="cursor-core" aria-hidden="true"></div>
+  <div class="cursor-ring" aria-hidden="true"></div>
+  <div id="scanBeam" class="scan-beam" aria-hidden="true"></div>
+  <div class="ambient-orb ambient-orb-a" aria-hidden="true"></div>
+  <div class="ambient-orb ambient-orb-b" aria-hidden="true"></div>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="CTF Replay Lab home">
+      <span class="brand-mark">&gt;_</span>
+      <span>
+        <strong>CTF Replay Lab</strong>
+        <small>Analyze evidence. Replay reasoning. Verify answers.</small>
+      </span>
+    </a>
+
+    <nav class="header-actions" aria-label="Project actions">
+      <button id="loadArtifactButton" class="button button-ghost" type="button">Load artifact</button>
+      <button id="loadChallengeButton" class="button button-ghost header-optional" type="button">Load challenge</button>
+      <button id="authorButton" class="button button-ghost header-optional" type="button">Author manifest</button>
+      <button id="demoButton" class="button button-ghost" type="button">Demo</button>
+      <button id="pulseScanButton" class="button button-signal" type="button">Pulse scan</button>
+      <button id="caseboardButton" class="button button-ghost" type="button">Caseboard</button>
+      <button id="diagnosticsButton" class="button button-ghost" type="button">System check</button>
+      <button id="themeButton" class="button button-ghost" type="button">Skin: Void</button>
+      <button id="focusModeButton" class="button button-ghost header-optional" type="button">Focus mode</button>
+      <button id="commandPaletteButton" class="button button-ghost" type="button">Tools · ⌘K</button>
+      <button id="resetButton" class="button button-ghost header-optional" type="button">Reset</button>
+      <button id="exportButton" class="button button-primary" type="button" disabled>Export report</button>
+    </nav>
+
+    <input id="artifactInput" type="file" hidden />
+    <input id="challengeInput" type="file" accept=".json,.ctflab.json,application/json" hidden />
+  </header>
+
+  <aside id="sectionRail" class="tactical-rail" aria-label="Section navigation">
+    <small>CASE FLOW</small>
+    <nav>
+      <a href="#heroSection" data-rail-target="heroSection"><span></span><strong>Intro</strong></a>
+      <a href="#dropZone" data-rail-target="dropZone"><span></span><strong>Intake</strong></a>
+      <a href="#analysisPanel" data-rail-target="analysisPanel"><span></span><strong>Analyze</strong></a>
+      <a href="#decoderPanel" data-rail-target="decoderPanel"><span></span><strong>Decode</strong></a>
+      <a href="#verificationPanel" data-rail-target="verificationPanel"><span></span><strong>Verify</strong></a>
+      <a href="#replayPanel" data-rail-target="replayPanel"><span></span><strong>Replay</strong></a>
+    </nav>
+  </aside>
+
+  <main id="top" class="page-shell">
+    <section id="heroSection" class="hero">
+      <div class="hero-copy-block">
+        <div class="case-stamp"><span>CASE</span><strong>404</strong><small>LOCAL FORENSICS NODE</small></div>
+        <p class="eyebrow">LOCAL-FIRST · EVIDENCE-AWARE · MANIFEST-VERIFIED</p>
+        <h1><span>Interrogate</span> the bytes.<br /><em>Reconstruct</em> the truth.</h1>
+        <p class="hero-copy">
+          A browser-native CTF investigation deck for identifying disguised files, carving hidden payloads,
+          chaining decoders, preserving evidence provenance, and proving the final flag.
+        </p>
+        <div class="hero-actions">
+          <button class="button button-primary button-large" type="button" data-hero-action="artifact">Open a case</button>
+          <button class="button button-ghost button-large" type="button" data-hero-action="demo">Run live demo</button>
+          <span class="hero-shortcut">Press <kbd>Ctrl</kbd> + <kbd>K</kbd> for the command deck</span>
+        </div>
+        <div class="hero-trust-row">
+          <span><i class="status-light"></i> Offline processing</span>
+          <span>Zero uploads</span>
+          <span>Read-only analysis</span>
+        </div>
+      </div>
+
+      <div class="hero-console" data-tilt>
+        <div class="console-topbar">
+          <div class="console-dots"><span></span><span></span><span></span></div>
+          <span>replay://live-signal</span>
+          <strong id="heroClock">00:00:00</strong>
+        </div>
+        <canvas id="heroSignalCanvas" class="hero-signal-canvas" aria-hidden="true"></canvas>
+        <div class="console-readout">
+          <div><span>NODE</span><strong>V01d_404</strong></div>
+          <div><span>MODE</span><strong>SAFE / LOCAL</strong></div>
+          <div><span>STATUS</span><strong class="signal-text">LISTENING</strong></div>
+        </div>
+        <div id="heroTerminal" class="hero-terminal" aria-live="polite">
+          <p><span>01</span> mounting browser sandbox...</p>
+          <p><span>02</span> magic-byte engine online</p>
+          <p><span>03</span> provenance ledger armed</p>
+          <p class="terminal-current"><span>04</span> awaiting artifact signal<span class="terminal-caret">_</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="dropZone" class="drop-zone" tabindex="0" aria-label="Artifact upload area">
+      <div class="drop-icon">⇧</div>
+      <h2>Drop an artifact to begin</h2>
+      <p>Images, archives, executables, documents, captures, audio, and text up to 50 MB.</p>
+      <div class="drop-actions">
+        <button id="chooseArtifactButton" class="button button-primary" type="button">Choose artifact</button>
+        <button id="chooseChallengeButton" class="button button-ghost" type="button">Load challenge manifest</button>
+      </div>
+      <small>Use only authorized CTF or educational artifacts.</small>
+    </section>
+
+    <section id="workspace" class="workspace hidden" aria-live="polite">
+      <div id="challengeBanner" class="challenge-banner">
+        <div>
+          <span id="modePill" class="pill">Practice mode</span>
+          <strong id="challengeTitle">No challenge manifest loaded</strong>
+          <small id="challengeSubtitle">Candidates can be collected, but only a manifest can verify the final flag.</small>
+        </div>
+        <div class="challenge-banner-actions">
+          <button id="clearChallengeButton" class="icon-button hidden" type="button">Clear manifest</button>
+        </div>
+      </div>
+
+      <section class="investigator-hud" aria-label="Investigator progression">
+        <div class="operator-card">
+          <div class="operator-avatar"><span>V</span><i></i></div>
+          <div>
+            <small>ACTIVE OPERATOR</small>
+            <strong>@V01d_404</strong>
+            <span id="investigatorRank">Packet Scout</span>
+          </div>
+        </div>
+        <div class="xp-module">
+          <div class="xp-label"><span>Investigation XP</span><strong id="xpValue">0 XP</strong></div>
+          <div class="xp-track"><i id="xpBar"></i><b id="xpPulse"></b></div>
+          <small id="xpNext">250 XP until Signal Hunter</small>
+        </div>
+        <div class="achievement-strip" id="achievementStrip">
+          <span class="achievement locked" data-achievement="first-byte" title="Identify an artifact">01</span>
+          <span class="achievement locked" data-achievement="evidence-hunter" title="Collect five evidence items">05</span>
+          <span class="achievement locked" data-achievement="decoder-chain" title="Run three decoder operations">03</span>
+          <span class="achievement locked" data-achievement="verified" title="Verify the final flag">✓</span>
+        </div>
+        <div class="next-move-card">
+          <small>NEXT BEST MOVE</small>
+          <strong id="nextMoveText">Load an artifact and establish identity.</strong>
+          <button id="hudPulseButton" class="icon-button signal-icon" type="button">Locate</button>
+        </div>
+      </section>
+
+      <div class="summary-grid">
+        <article class="summary-card">
+          <span>Detected format</span>
+          <strong id="formatSummary">—</strong>
+          <small id="categorySummary">—</small>
+        </article>
+        <article class="summary-card">
+          <span>File size</span>
+          <strong id="sizeSummary">—</strong>
+          <small id="mimeSummary">—</small>
+        </article>
+        <article class="summary-card">
+          <span>Entropy</span>
+          <strong id="entropySummary">—</strong>
+          <small id="entropyLabel">Waiting for analysis</small>
+        </article>
+        <article class="summary-card">
+          <span>Evidence</span>
+          <strong id="evidenceSummary">0</strong>
+          <small id="evidenceLabel">No evidence recorded</small>
+        </article>
+        <article class="summary-card">
+          <span>Progress</span>
+          <strong id="progressSummary">0 / 4</strong>
+          <small id="progressLabel">Investigation not started</small>
+        </article>
+      </div>
+
+      <div class="workspace-grid">
+        <section id="analysisPanel" class="panel analysis-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-label">ARTIFACT ANALYSIS</p>
+              <h2 id="artifactTitle">No artifact selected</h2>
+            </div>
+            <div class="heading-badges">
+              <span id="categoryBadge" class="pill">Unknown</span>
+              <span id="riskBadge" class="pill pill-neutral">Read-only</span>
+            </div>
+          </div>
+
+          <div class="tab-list" role="tablist" aria-label="Artifact analysis tabs">
+            <button class="tab active" data-tab="overview" type="button">Overview</button>
+            <button class="tab" data-tab="metadata" type="button">Metadata <span id="metadataCount" class="count">0</span></button>
+            <button class="tab" data-tab="strings" type="button">Strings <span id="stringsCount" class="count">0</span></button>
+            <button class="tab" data-tab="hex" type="button">Hex</button>
+            <button class="tab" data-tab="byte-map" type="button">Byte map</button>
+            <button class="tab" data-tab="signatures" type="button">Signatures <span id="signatureCount" class="count">0</span></button>
+            <button class="tab" data-tab="archives" type="button">Archives <span id="archiveCount" class="count">0</span></button>
+            <button class="tab" data-tab="findings" type="button">Findings <span id="findingsCount" class="count">0</span></button>
+            <button class="tab" data-tab="evidence" type="button">Evidence <span id="evidenceCount" class="count">0</span></button>
+          </div>
+
+          <div id="tab-overview" class="tab-panel active">
+            <div class="detail-grid">
+              <div class="detail-card"><span>Filename</span><strong id="fileName">—</strong></div>
+              <div class="detail-card"><span>Browser MIME</span><strong id="mimeType">—</strong></div>
+              <div class="detail-card"><span>Detected format</span><strong id="detectedFormat">—</strong></div>
+              <div class="detail-card"><span>File size</span><strong id="fileSize">—</strong></div>
+              <div class="detail-card"><span>Printable ratio</span><strong id="printableRatio">—</strong></div>
+              <div class="detail-card"><span>Artifact role</span><strong id="artifactRole">Primary artifact</strong></div>
+              <div class="detail-card detail-wide">
+                <span>SHA-256</span>
+                <div class="copy-row">
+                  <code id="fileHash">—</code>
+                  <button class="icon-button" data-copy-target="fileHash" type="button">Copy</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="callout">
+              <p class="panel-label">INITIAL ASSESSMENT</p>
+              <p id="initialFinding">Upload an artifact to begin analysis.</p>
+            </div>
+
+            <div id="artifactHashWarning" class="callout callout-warning hidden">
+              <strong>Challenge artifact mismatch</strong>
+              <p>The loaded artifact SHA-256 does not match the manifest. Verification is disabled.</p>
+            </div>
+          </div>
+
+          <div id="tab-metadata" class="tab-panel">
+            <div id="metadataList" class="data-list empty-state">No metadata has been extracted yet.</div>
+          </div>
+
+          <div id="tab-strings" class="tab-panel">
+            <div class="toolbar">
+              <input id="stringSearch" class="text-input" type="search" placeholder="Filter extracted strings..." />
+              <label class="inline-control"><input id="interestingOnly" type="checkbox" /> Interesting only</label>
+              <button id="copyStringsButton" class="button button-ghost" type="button">Copy visible</button>
+            </div>
+            <pre id="stringsOutput" class="code-view">No strings extracted yet.</pre>
+          </div>
+
+          <div id="tab-hex" class="tab-panel">
+            <div class="toolbar">
+              <label class="field-label compact" for="hexOffsetInput">Offset</label>
+              <input id="hexOffsetInput" class="text-input offset-input" type="text" value="0" placeholder="0 or 0x100" />
+              <button id="jumpHexButton" class="button button-ghost" type="button">Jump</button>
+              <button id="downloadSelectionButton" class="button button-ghost" type="button">Download from offset</button>
+            </div>
+            <pre id="hexOutput" class="code-view">No hex preview available.</pre>
+          </div>
+
+          <div id="tab-byte-map" class="tab-panel">
+            <div class="byte-map-toolbar">
+              <div>
+                <p class="panel-label">BYTE INTELLIGENCE</p>
+                <h3>Entropy and byte-density map</h3>
+                <p>Each column represents a file region. Brighter segments indicate higher entropy or denser non-text bytes.</p>
+              </div>
+              <button id="exportByteMapButton" class="button button-ghost" type="button">Export map PNG</button>
+            </div>
+            <div class="byte-map-stage">
+              <canvas id="byteMapCanvas" aria-label="Artifact byte map visualization"></canvas>
+              <div id="byteMapTooltip" class="byte-map-tooltip hidden"></div>
+            </div>
+            <div class="byte-map-stats">
+              <div><span>Block size</span><strong id="byteMapBlockSize">—</strong></div>
+              <div><span>Peak entropy</span><strong id="byteMapPeakEntropy">—</strong></div>
+              <div><span>Dominant byte</span><strong id="byteMapDominantByte">—</strong></div>
+              <div><span>Null-byte ratio</span><strong id="byteMapNullRatio">—</strong></div>
+            </div>
+          </div>
+
+          <div id="tab-signatures" class="tab-panel">
+            <div class="toolbar">
+              <input id="signatureSearch" class="text-input" type="search" placeholder="Filter signatures by name or offset..." />
+              <button id="copySignaturesButton" class="button button-ghost" type="button">Copy map</button>
+            </div>
+            <div id="signatureList" class="signature-list empty-state">No embedded signatures have been scanned yet.</div>
+          </div>
+
+          <div id="tab-archives" class="tab-panel">
+            <div id="archiveList" class="archive-list empty-state">No archive region has been detected.</div>
+          </div>
+
+          <div id="tab-findings" class="tab-panel">
+            <div id="findingsList" class="finding-list empty-state">No findings yet.</div>
+          </div>
+
+          <div id="tab-evidence" class="tab-panel">
+            <div class="toolbar">
+              <button id="exportEvidenceButton" class="button button-ghost" type="button">Export evidence JSON</button>
+              <button id="clearEvidenceButton" class="button button-ghost" type="button">Clear manual evidence</button>
+            </div>
+            <div id="evidenceList" class="evidence-list empty-state">No evidence recorded yet.</div>
+          </div>
+        </section>
+
+        <aside class="sidebar-stack">
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-label">SOLVE REPLAY</p>
+                <h2>Investigation timeline</h2>
+              </div>
+              <span id="progressText" class="pill">0 / 4</span>
+            </div>
+            <div id="timeline" class="timeline"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-label">PROGRESSIVE GUIDANCE</p>
+                <h2>Hints</h2>
+              </div>
+            </div>
+            <div id="hintText" class="hint-box">Upload an artifact to unlock the first hint.</div>
+            <button id="unlockHintButton" class="button button-primary button-full" type="button" disabled>Unlock available hint</button>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-label">SESSION</p>
+                <h2>Current state</h2>
+              </div>
+            </div>
+            <div id="sessionStatus" class="session-status">Upload a challenge artifact to begin.</div>
+            <div class="security-note">
+              <strong>Safety model</strong>
+              <p>Read-only browser analysis. Uploaded executables are never run and files never leave this page.</p>
+            </div>
+          </section>
+        </aside>
+      </div>
+
+      <div class="tool-grid">
+        <section id="decoderPanel" class="panel decoder-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-label">DECODER WORKBENCH</p>
+              <h2>Transform suspicious data</h2>
+            </div>
+            <button id="swapDecoderButton" class="icon-button" type="button">Use output as input</button>
+          </div>
+
+          <div class="decoder-controls">
+            <div>
+              <label class="field-label" for="decoderMode">Operation</label>
+              <select id="decoderMode" class="select-input">
+                <option value="base64">Base64 decode</option>
+                <option value="hex">Hex to text</option>
+                <option value="base32">Base32 decode</option>
+                <option value="binary">Binary to text</option>
+                <option value="decimal">Decimal ASCII</option>
+                <option value="rot13">ROT13</option>
+                <option value="caesar">Caesar shift</option>
+                <option value="url">URL decode</option>
+                <option value="reverse">Reverse text</option>
+                <option value="xor">Repeating-key XOR</option>
+              </select>
+            </div>
+            <div id="keyControl" class="hidden">
+              <label class="field-label" for="decoderKey">XOR key</label>
+              <input id="decoderKey" class="text-input" type="text" placeholder="quarterly_report" />
+            </div>
+            <div id="shiftControl" class="hidden">
+              <label class="field-label" for="caesarShift">Shift</label>
+              <input id="caesarShift" class="text-input" type="number" min="-25" max="25" value="13" />
+            </div>
+            <div id="inputEncodingControl" class="hidden">
+              <label class="field-label" for="decoderInputEncoding">XOR input</label>
+              <select id="decoderInputEncoding" class="select-input">
+                <option value="text">Text</option>
+                <option value="hex">Hex bytes</option>
+                <option value="base64">Base64 bytes</option>
+              </select>
+            </div>
+            <div id="outputEncodingControl" class="hidden">
+              <label class="field-label" for="decoderOutputEncoding">XOR output</label>
+              <select id="decoderOutputEncoding" class="select-input">
+                <option value="text">Text</option>
+                <option value="hex">Hex</option>
+                <option value="base64">Base64</option>
+              </select>
+            </div>
+          </div>
+
+          <label class="field-label" for="decoderInput">Input</label>
+          <textarea id="decoderInput" class="text-area decoder-input" placeholder="Paste metadata, extracted text, hex, Base64, or a binary payload encoded as hex/Base64..."></textarea>
+
+          <div class="button-row">
+            <button id="decodeButton" class="button button-primary" type="button">Run operation</button>
+            <button id="autoProbeButton" class="button button-signal" type="button">Auto-probe input</button>
+            <button id="saveDecodeEvidenceButton" class="button button-ghost" type="button">Save output as evidence</button>
+            <button id="downloadDecodeButton" class="button button-ghost" type="button">Download output</button>
+          </div>
+
+          <div id="autoProbeResults" class="auto-probe-results hidden" aria-live="polite"></div>
+          <pre id="decoderOutput" class="result-box">Decoded output will appear here.</pre>
+          <div id="decoderHistory" class="history-list empty-state">No decoder steps recorded.</div>
+        </section>
+
+        <section id="verificationPanel" class="panel verification-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-label">FLAG VERIFICATION</p>
+              <h2>Submit recovered flag</h2>
+            </div>
+            <span id="verificationMode" class="pill">Unverified practice</span>
+          </div>
+
+          <label class="field-label" for="flagInput">Recovered flag</label>
+          <input id="flagInput" class="text-input" type="text" placeholder="flag{...}" autocomplete="off" />
+
+          <button id="submitFlagButton" class="button button-primary button-full" type="button">Verify flag</button>
+          <div id="flagResult" class="result-box">A candidate is not considered correct until a challenge manifest verifies its SHA-256.</div>
+
+          <div class="candidate-block">
+            <div class="candidate-heading">
+              <span>Discovered candidates</span>
+              <span id="candidateCount" class="count">0</span>
+            </div>
+            <div id="candidateList" class="candidate-list empty-state">No flag candidates discovered yet.</div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-label">COMMAND GUIDE</p>
+              <h2>Understand the terminal</h2>
+            </div>
+          </div>
+
+          <label class="field-label" for="commandSelect">Choose a command</label>
+          <select id="commandSelect" class="select-input">
+            <option value="">Select a command...</option>
+            <option value="file">file challenge.bin</option>
+            <option value="strings">strings challenge.bin</option>
+            <option value="exiftool">exiftool challenge.png</option>
+            <option value="binwalk">binwalk challenge.bin</option>
+            <option value="xxd">xxd challenge.bin</option>
+            <option value="unzip">unzip -l archive.zip</option>
+            <option value="dd">dd if=artifact of=tail.zip bs=1 skip=OFFSET</option>
+            <option value="sha256sum">sha256sum challenge.bin</option>
+          </select>
+          <div id="commandExplanation" class="result-box">Select a command to see what it does, why it helps, and its risk level.</div>
+        </section>
+      </div>
+
+      <div class="bottom-grid">
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-label">INVESTIGATION NOTES</p>
+              <h2>Your reasoning</h2>
+            </div>
+            <span id="notesStatus" class="save-status">Not saved</span>
+          </div>
+          <textarea id="notesInput" class="notes-area" placeholder="Record hypotheses, commands, offsets, failed attempts, and the next test..."></textarea>
+        </section>
+
+        <section id="replayPanel" class="panel replay-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-label">ACTION REPLAY</p>
+              <h2>What happened</h2>
+            </div>
+            <button id="copyReplayButton" class="icon-button" type="button">Copy</button>
+          </div>
+          <div id="replayList" class="replay-list empty-state">No actions recorded yet.</div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Built by <strong>@V01d_404</strong> for Stardance · Authorized CTF artifacts only
+  </footer>
+
+  <dialog id="authorDialog" class="modal">
+    <form method="dialog" class="modal-card" id="authorForm">
+      <div class="modal-heading">
+        <div>
+          <p class="panel-label">CHALLENGE AUTHOR MODE</p>
+          <h2>Create a safe verification manifest</h2>
+        </div>
+        <button class="icon-button" value="cancel" type="submit">Close</button>
+      </div>
+
+      <p class="modal-copy">The manifest stores only hashes and hints. It never stores the plaintext flag.</p>
+
+      <div class="form-grid">
+        <label>Title<input id="authorTitle" class="text-input" required placeholder="Ghost Tail" /></label>
+        <label>Challenge ID<input id="authorId" class="text-input" required placeholder="ghost-tail" /></label>
+        <label>Category<input id="authorCategory" class="text-input" placeholder="Forensics / Cryptography" /></label>
+        <label>Difficulty<select id="authorDifficulty" class="select-input"><option>Easy</option><option>Medium</option><option selected>Medium-Hard</option><option>Hard</option></select></label>
+        <label class="form-wide">Expected flag<input id="authorFlag" class="text-input" required placeholder="flag{...}" autocomplete="off" /></label>
+        <label class="form-wide">Artifact SHA-256<input id="authorArtifactHash" class="text-input" placeholder="Use the currently loaded artifact hash or leave blank" /></label>
+        <label class="form-wide">Hints, one per line<textarea id="authorHints" class="text-area" placeholder="Check the real file type&#10;Inspect data after the image terminator"></textarea></label>
+      </div>
+
+      <div class="button-row modal-actions">
+        <button id="useCurrentHashButton" class="button button-ghost" type="button">Use current artifact hash</button>
+        <button id="exportManifestButton" class="button button-primary" type="button">Export .ctflab.json</button>
+      </div>
+    </form>
+  </dialog>
+
+
+
+  <div id="diagnosticsOverlay" class="diagnostics-overlay hidden" aria-hidden="true">
+    <div class="diagnostics-backdrop" data-diagnostics-close="true"></div>
+    <section class="diagnostics-shell" role="dialog" aria-modal="true" aria-labelledby="diagnosticsTitle">
+      <header class="diagnostics-header">
+        <div>
+          <p class="panel-label">RUNTIME DIAGNOSTICS</p>
+          <h2 id="diagnosticsTitle">System integrity check</h2>
+          <p>Runs capability checks and deterministic tests for hashing, decoders, rendering, storage, and file handling.</p>
+        </div>
+        <button class="icon-button" type="button" data-diagnostics-close="true">Close</button>
+      </header>
+      <div class="diagnostics-summary">
+        <div><span>Overall</span><strong id="diagnosticsOverall">Not run</strong></div>
+        <div><span>Passed</span><strong id="diagnosticsPassed">0</strong></div>
+        <div><span>Warnings</span><strong id="diagnosticsWarnings">0</strong></div>
+        <div><span>Failed</span><strong id="diagnosticsFailed">0</strong></div>
+      </div>
+      <div id="diagnosticsList" class="diagnostics-list empty-state">Run the check to verify this browser environment.</div>
+      <div class="button-row diagnostics-actions">
+        <button id="copyDiagnosticsButton" class="button button-ghost" type="button">Copy results</button>
+        <button id="runDiagnosticsButton" class="button button-primary" type="button">Run full system check</button>
+      </div>
+    </section>
+  </div>
+
+
+  <div id="caseboardOverlay" class="caseboard-overlay hidden" aria-hidden="true">
+    <div class="caseboard-backdrop" data-caseboard-close="true"></div>
+    <section class="caseboard-shell" role="dialog" aria-modal="true" aria-label="Evidence constellation caseboard">
+      <header class="caseboard-header">
+        <div>
+          <p class="panel-label">EVIDENCE CONSTELLATION</p>
+          <h2>Caseboard // live provenance map</h2>
+          <p>Every clue is linked to its source. Hover or click a node to inspect its role in the investigation.</p>
+        </div>
+        <div class="caseboard-actions">
+          <button id="caseboardCenterButton" class="button button-ghost" type="button">Re-center</button>
+          <button class="button button-primary" type="button" data-caseboard-close="true">Close caseboard</button>
+        </div>
+      </header>
+      <div class="caseboard-main">
+        <div class="caseboard-stage">
+          <canvas id="caseboardCanvas"></canvas>
+          <div class="caseboard-grid-label top-left">SOURCE GRAPH // LOCAL</div>
+          <div class="caseboard-grid-label bottom-right" id="caseboardNodeCount">0 NODES</div>
+        </div>
+        <aside class="caseboard-inspector">
+          <div class="inspector-status"><i></i><span>PROVENANCE LINK ACTIVE</span></div>
+          <div id="caseboardInspector" class="inspector-content">
+            <small>SELECTED NODE</small>
+            <h3>Artifact root</h3>
+            <p>Load a case to generate an interactive map of evidence, findings, decoder steps, and candidates.</p>
+          </div>
+          <div class="caseboard-legend">
+            <span><i class="legend-root"></i>Artifact</span>
+            <span><i class="legend-evidence"></i>Evidence</span>
+            <span><i class="legend-decode"></i>Decode</span>
+            <span><i class="legend-candidate"></i>Candidate</span>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </div>
+
+  <div id="commandPalette" class="command-palette hidden" aria-hidden="true">
+    <div class="command-palette-backdrop" data-command-close="true"></div>
+    <div class="command-palette-card" role="dialog" aria-modal="true" aria-label="Quick actions">
+      <div class="command-palette-header">
+        <div>
+          <p class="panel-label">QUICK ACTIONS</p>
+          <h2>Move fast through the lab</h2>
+        </div>
+        <button class="icon-button" type="button" data-command-close="true">Close</button>
+      </div>
+      <input id="commandPaletteInput" class="text-input command-palette-input" type="text" placeholder="Search actions, tabs, tools…" autocomplete="off" />
+      <div id="commandPaletteList" class="command-palette-list"></div>
+      <p class="command-palette-tip">Tip: press <strong>Ctrl/⌘ + K</strong> anytime. Press <strong>F</strong> for focus mode.</p>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status"></div>
+  <script src="./app.js?v=600"></script>
+</body>
+</html>

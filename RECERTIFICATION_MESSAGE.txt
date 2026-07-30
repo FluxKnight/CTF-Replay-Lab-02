@@ -1,0 +1,5 @@
+I rebuilt CTF Replay Lab as a custom forensic operations deck and addressed the cursor issue by keeping the native operating-system cursor available everywhere; the animated follower is now decorative only.
+
+I also added original features tied directly to the CTF workflow: a full-artifact Signature Map with exact offsets, a regional Byte Intelligence Map, a confidence-ranked Auto-probe Decoder, an interactive Evidence Constellation, contextual Pulse Scan guidance, and a visible browser System Check.
+
+The built-in Ghost Tail demo now exercises the complete flow: identify a PNG, detect an appended ZIP, extract a clue, auto-detect its encoding, preserve provenance, and verify the final flag using a trusted SHA-256 manifest. The local-first safety model and no-binary-execution boundary remain unchanged.

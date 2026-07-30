@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "ghost-tail-demo",
+  "title": "Ghost Tail",
+  "category": "Forensics / Encoding",
+  "difficulty": "Medium",
+  "artifactSha256": "7a6e341a6d090b85eb8042151c84950f3676f85c4f69fafe820c8156d1880710",
+  "expectedFlagSha256": "7efe76d43d20c32d4e4ab5549ff36f63a4a30b2a8c14ebf866f8dfe8c6da5092",
+  "flagFormat": "^flag\\{[^}]+\\}$",
+  "hints": [
+    "The primary PNG is not the whole file. Inspect the Signature map and bytes after IEND.",
+    "Open Archives and extract or send clue.txt to the decoder.",
+    "The recovered clue is Base64. Decode it, then verify the exact flag."
+  ]
+}
