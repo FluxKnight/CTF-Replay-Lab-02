@@ -50,4 +50,4 @@ My main goal is to make the tool useful for beginners without trying to replace 
 # Safety
 Use this project only for CTF challenges, educational exercises or files you are authorized to inspect. CTF Replay Lab performs passive analysis and does not execute uploaded binaries.
 # License
-MIT license. See LICENSE.
+MIT License. See LICENSE.
