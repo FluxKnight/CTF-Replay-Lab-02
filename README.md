@@ -1,30 +1,35 @@
 # CTF Replay Lab
 
-A browser-based workspace for analyzing CTF artifacts, decoding hidden data, recording evidence, and verifying flags.
+CTF Replay Lab is a small browser-based tool I made for investigating CTF files without having to switch between a bunch of different tabs and tools.
 
-All analysis is performed locally in the browser, and nothing is uploaded to a server.
+You can drop in an artifact, inspect what is inside it, decode suspicious data, save useful findings, and verify the final flag with a challenge manifest.
+
+Everything happens locally in your browser. The file never gets uploaded to a server.
 
 **Live demo:**
 https://fluxknight.github.io/CTF-Replay-Lab-02/
 
 Built by [@V01d_404](https://github.com/FluxKnight) for Hack Club Stardance.
 
-## What it does
+## Features
 
-* Detects file types using magic bytes
-* Finds and extracts embedded files
-* Displays metadata, strings, hashes, hex data, and entropy
-* Inspects supported ZIP archives
-* Carves data from specific byte offsets
-* Decodes Base64, Base32, hex, binary, URL encoding, ROT13, Caesar cipher, reversed text, and XOR
-* Records evidence and investigation steps
-* Verifies flags using SHA-256 challenge manifests
-* Exports Markdown reports, evidence JSON, and byte-map images
-* Runs entirely in the browser with no third-party JavaScript libraries
+The lab can:
 
-Files up to **50 MB** are supported.
+* detect file types from their actual bytes instead of the filename
+* find embedded files and signatures
+* show hashes, metadata, strings, hex, and entropy
+* inspect and extract supported ZIP files
+* carve data from a specific offset
+* decode Base64, Base32, hex, binary, URL encoding, ROT13, Caesar, reversed text, and XOR
+* save evidence and replay investigation steps
+* verify flags using SHA-256 manifests
+* export reports, evidence, and byte maps
 
-## Running locally
+The maximum file size is currently **50 MB**.
+
+There is no backend, and the project is written with plain HTML, CSS, and JavaScript.
+
+## Running it locally
 
 Clone the repository:
 
@@ -35,13 +40,13 @@ cd CTF-Replay-Lab-02
 
 Start a local server.
 
-### Windows
+On Windows:
 
 ```bash
 py -m http.server 5500
 ```
 
-### Linux or macOS
+On Linux or macOS:
 
 ```bash
 python3 -m http.server 5500
@@ -53,43 +58,44 @@ Then open:
 http://localhost:5500/
 ```
 
-## How to use
+## How I normally use it
 
-1. Upload an artifact or drag and drop it into the page.
-2. Review its detected file type, metadata, strings, hex data, and signatures.
-3. Extract or decode suspicious content.
-4. Record useful findings as evidence.
-5. Load a challenge manifest and verify the final flag.
-6. Export the investigation report.
+1. Drop in the artifact.
+2. Check the detected format and file signatures.
+3. Look through strings, metadata, hex, and archive entries.
+4. Send anything suspicious to the decoder.
+5. Save important findings as evidence.
+6. Load the manifest and test the final flag.
+7. Export the report if needed.
 
 ## Demo challenge
 
-The project includes a built-in demo challenge called **Ghost Tail**:
+There is a small demo challenge included in the repository:
 
 ```text
 examples/ghost-tail.png
 examples/ghost-tail.ctflab.json
 ```
 
-Load both files, inspect the hidden signature, open the embedded archive, decode `clue.txt`, and submit the recovered flag.
+The PNG contains an embedded archive. Inside it is a clue that needs to be decoded before the flag can be verified.
 
-The **Demo** button loads the same challenge automatically.
+You can load the two files manually or just press the **Demo** button.
 
-## Keyboard shortcuts
+## Shortcuts
 
-* `Ctrl/Cmd + K` — Open command deck
-* `C` — Open caseboard
+* `Ctrl/Cmd + K` — Open the command deck
+* `C` — Open the caseboard
 * `S` — Run Pulse Scan
-* `T` — Change skin
+* `T` — Change the interface skin
 * `F` — Toggle Focus Mode
-* `Esc` — Close the active modal
+* `Esc` — Close the current modal
 
-## Safety
+## Notes
 
-Use this application only for CTF challenges or other authorized file analysis.
+This project is made for CTFs and other authorized file analysis.
 
-CTF Replay Lab performs passive, read-only analysis in the browser and does not execute uploaded binaries. It is not a replacement for dedicated tools such as Ghidra, Wireshark, ExifTool, binwalk, or a malware sandbox.
+It only performs passive analysis and does not execute uploaded binaries. For deeper investigation, tools such as Ghidra, Wireshark, ExifTool, binwalk, or a proper malware sandbox are still better choices.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+MIT — see [LICENSE](LICENSE).
